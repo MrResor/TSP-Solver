@@ -4,7 +4,7 @@ from solve import solveWindow
 
 class MainWindow(QMainWindow):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent = None):
         # setting up windows title for the whole class
         super().__init__(parent)
         self.toVisit = []
@@ -90,9 +90,8 @@ class MainWindow(QMainWindow):
 
     def replot(self):
         # itterating through rows and if it was marked we plot it red, otherwise blue
-        row = 0
         self.maptile.axes.cla()
-        for r in self.rows:
+        for r, row in enumerate(self.rows):
             if r.checkState() == 2:
                 self.maptile.axes.plot(self.cities[row][4], self.cities[row][3], marker = 'o', color = 'r')
                 self.maptile.axes.text(self.cities[row][4], self.cities[row][3], row + 1, fontsize = 10)
@@ -101,8 +100,7 @@ class MainWindow(QMainWindow):
             else:
                 self.maptile.axes.plot(self.cities[row][4], self.cities[row][3], marker = 'o', color = 'b')
                 if self.cities[row] in self.toVisit:
-                    self.toVisit.remove(self.cities[row])
-            row += 1    
+                    self.toVisit.remove(self.cities[row])   
         self.maptile.draw()
 
     def mark(self):
@@ -114,7 +112,7 @@ class MainWindow(QMainWindow):
         # creating vertical layout with map, button and label
         vlayout = QVBoxLayout()
 
-        self.maptile = MplCanvas(self, width=5, height=4, dpi=100)
+        self.maptile = MplCanvas(self, width = 5, height = 4, dpi = 100)
         self.maptile.setMinimumHeight(600)
         self.replot()
 
