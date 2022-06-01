@@ -1,4 +1,4 @@
-# file containing most of the imports the imports
+# file containing most of the imports
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QAction, QHBoxLayout
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QCheckBox, QListWidget, QListWidgetItem
 from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox
