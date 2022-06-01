@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+Scripts/*
+share/*
 
 # C extensions
 *.so

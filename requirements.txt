@@ -1,0 +1,4 @@
+PyQt5
+matplotlib
+pysqlite3
+numpy
