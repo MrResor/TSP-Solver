@@ -16,9 +16,9 @@ When data is loaded into a program missing connections are recreated using Floyd
 colony algorithm is run.
 
 ## TODO
-> Implement "loading bar"
-> Implement possibility to have results presented on leaflet like screen
-> remove any newly found errors
+Implement "loading bar"
+Implement possibility to have results presented on leaflet like screen
+remove any newly found errors
 
 ## errors
 program does not detect if a city can be reached at all, so check after Floyd-Warshall algorithm should be performed. This is not a problem for a custom (provided) data.
