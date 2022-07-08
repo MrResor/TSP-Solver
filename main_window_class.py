@@ -92,15 +92,15 @@ class MainWindow(QMainWindow):
         # itterating through rows and if it was marked we plot it red, otherwise blue
         self.maptile.axes.cla()
         for r, row in enumerate(self.rows):
-            if r.checkState() == 2:
-                self.maptile.axes.plot(self.cities[row][4], self.cities[row][3], marker = 'o', color = 'r')
-                self.maptile.axes.text(self.cities[row][4], self.cities[row][3], row + 1, fontsize = 10)
-                if self.cities[row] not in self.toVisit:
-                    self.toVisit.append(self.cities[row])
+            if row.checkState() == 2:
+                self.maptile.axes.plot(self.cities[r][4], self.cities[r][3], marker = 'o', color = 'r')
+                self.maptile.axes.text(self.cities[r][4], self.cities[r][3], r + 1, fontsize = 10)
+                if self.cities[r] not in self.toVisit:
+                    self.toVisit.append(self.cities[r])
             else:
-                self.maptile.axes.plot(self.cities[row][4], self.cities[row][3], marker = 'o', color = 'b')
-                if self.cities[row] in self.toVisit:
-                    self.toVisit.remove(self.cities[row])   
+                self.maptile.axes.plot(self.cities[r][4], self.cities[r][3], marker = 'o', color = 'b')
+                if self.cities[r] in self.toVisit:
+                    self.toVisit.remove(self.cities[r])   
         self.maptile.draw()
 
     def mark(self):
@@ -144,3 +144,6 @@ class MainWindow(QMainWindow):
             # we have enough cities to continue so we calculate shortest path
             self.win = solveWindow(self.cities, self.toVisit, [self.button])
             self.button.setText("Working...")
+
+    # def dbDataLoad(self):
+    # function to load data from db and check it's contents correctness

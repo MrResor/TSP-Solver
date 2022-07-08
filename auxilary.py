@@ -79,7 +79,7 @@ class Dialog(QDialog):
         return names, mapres
 
     def dberror(self, error):
-        # dialog when database file is missing
+        # dialog when database file is missing or is incorrect
         QBtn = QDialogButtonBox.Ok
 
         buttonBox = QDialogButtonBox(QBtn)
