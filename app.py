@@ -4,12 +4,10 @@ import sys
 
 class Application:
     """Class responsible for PyQt initialization and exiting the program when it is finished
+    
         Atributes:
-        app  -- engine responsible for code to database communication 
-        base    -- variable holding the schema of automapped database
-        session -- variable responsible for passing querries
-        Methods:
-        refresh -- refreshes automaping of the database
+        app     -- holds application, for which we will present windows
+        win     -- holds main window and it's contents
     """
     def __init__(self, argv):
         self.app = QApplication(argv)
