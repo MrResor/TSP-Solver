@@ -27,10 +27,11 @@ class ErrDialog(Qtw.QDialog):
         err_disp        -- displays provided error message and if flag is
         raised closes program with given flag
     """
+    button_control = Qtc.pyqtSignal()
+
     def __init__(self, error: str, exit_flag=0):
         super().__init__()
         self.setWindowTitle("Error")
-        self.button_control = Qtc.pyqtSignal()
         self.Err_disp(error, exit_flag)
         self.button_control.emit()
 
@@ -64,10 +65,11 @@ class ResDialog(Qtw.QDialog):
         Methods:\n
         res_disp    -- displays result obtained by the program.
     """
+    button_control = Qtc.pyqtSignal()
+
     def __init__(self, to_plot):
         super().__init__()
         self.setWindowTitle("Path")
-        self.button_control = Qtc.pyqtSignal()
         self.Res_disp(to_plot)
         self.button_control.emit()
 
