@@ -35,6 +35,10 @@ class ErrDialog(Qtw.QDialog):
         self.button_control.emit()
 
     def Err_disp(self, error: str, exit_flag: int) -> None:
+        """ Function to display desired error message in the dialog.\n
+            Takes error string and exit flag as parameters. Presents the
+            message and if flag is other then zero terminates program.
+        """
         QBtn = Qtw.QDialogButtonBox.Ok
 
         button_box = Qtw.QDialogButtonBox(QBtn)
@@ -52,7 +56,7 @@ class ErrDialog(Qtw.QDialog):
             quit(exit_flag)
 
 
-class ResDialog(Qtw.Qdialog):
+class ResDialog(Qtw.QDialog):
     """ Class for displaying dialog window with obtained results.\n
 
         Attributes:\n
