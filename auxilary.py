@@ -41,16 +41,19 @@ class ErrDialog(Qtw.QDialog):
             Takes error string and exit flag as parameters. Presents the
             message and if flag is other then zero terminates program.
         """
-        layout = Qtw.QVBoxLayout()
         message = Qtw.QLabel(error)
         message.setAlignment(Qtc.Qt.AlignCenter)
-        hbox = Qtw.QHBoxLayout()
+
         button = Qtw.QPushButton(text="OK")
         button.setMaximumWidth(75)
         button.pressed.connect(self.finish)
-        layout.addWidget(message)
+
+        hbox = Qtw.QHBoxLayout()
         hbox.addWidget(button)
         hbox.setAlignment(Qtc.Qt.AlignCenter)
+
+        layout = Qtw.QVBoxLayout()
+        layout.addWidget(message)
         layout.addLayout(hbox)
         self.setLayout(layout)
 
@@ -83,17 +86,21 @@ class ResDialog(Qtw.QDialog):
             takes list of tuples as a parameter as it should contain the
             result.
         """
-        layout = Qtw.QVBoxLayout()
         names, mapres = self.Prep_names_and_plot(to_plot)
-        layout.addWidget(mapres)
+
         message = Qtw.QLabel(names)
         message.setAlignment(Qtc.Qt.AlignCenter)
-        layout.addWidget(message)
-        button_box = Qtw.QHBoxLayout()
+
         btn = Qtw.QPushButton(text="OK")
         btn.pressed.connect(self.finish)
+
+        button_box = Qtw.QHBoxLayout()
         button_box.addWidget(btn)
         button_box.setAlignment(Qtc.Qt.AlignCenter)
+
+        layout = Qtw.QVBoxLayout()
+        layout.addWidget(mapres)
+        layout.addWidget(message)
         layout.addLayout(button_box)
         self.setLayout(layout)
 
