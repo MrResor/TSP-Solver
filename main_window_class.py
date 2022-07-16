@@ -1,10 +1,11 @@
-from __init__ import *
-from auxilary import Dialog, MplCanvas
+from __init__ import Qtw, Qtc, Qtg, sqlite3, path
+from auxilary import ErrDialog, MplCanvas
 from solve import solveWindow
 
-class MainWindow(QMainWindow):
 
-    def __init__(self, parent = None):
+class MainWindow(Qtw.QMainWindow):
+
+    def __init__(self, parent=None):
         # setting up windows title for the whole class
         super().__init__(parent)
         self.toVisit = []
@@ -13,9 +14,9 @@ class MainWindow(QMainWindow):
 
     def initUI(self):
         # function prepairing each part of main window UI
-        mainwindow = QWidget()
+        mainwindow = Qtw.QWidget()
 
-        hlayout = QHBoxLayout()
+        hlayout = Qtw.QHBoxLayout()
         vlayout = self.listWidget()
 
         hlayout.addLayout(vlayout)
@@ -29,9 +30,9 @@ class MainWindow(QMainWindow):
 
     def listWidget(self):
         # creating vertical layout with cityList
-        vlayout = QVBoxLayout()
+        vlayout = Qtw.QVBoxLayout()
 
-        self.cityList = QListWidget()
+        self.cityList = Qtw.QListWidget()
         self.cityList.setMaximumWidth(600)
         self.populateCityList()
         self.cityList.itemChanged.connect(self.replot)
@@ -44,7 +45,8 @@ class MainWindow(QMainWindow):
         if path.exists("database.db"):
             con = sqlite3.connect("database.db")
         else:
-            dlg = Dialog(2, None, [], "Database file missing!\nIt is neccessary for this application to work.")
+            dlg = ErrDialog("Database file missing!\nIt is neccessary for this\
+                            application to work.", 2)
         cur = con.cursor()
         try:
             cur.execute('PRAGMA TABLE_INFO(cities)')
@@ -74,76 +76,85 @@ class MainWindow(QMainWindow):
             # if there is no table cities in db, it means it is not mine db,
             # so we close connection, remove the file we just created and show error dialog
             con.close()
-            dlg = Dialog(2, None, [], "Incorrect Database file found!\nPlease use correct one, provided by creator.")
+            dlg = ErrDialog("Incorrect Database file found!\nPlease use\
+                correct one, provided by creator.", 2)
         con.close()
         self.rows = []
         r = 1
         # filling list row by row with checkbox and city name
         for row in self.cities:
-            rlay = QListWidgetItem()
-            rlay.setCheckState(Qt.Unchecked)
-            rlay.setText(row[2] + " (" + str(r) +")")
-            rlay.setFont(QFont('Arial', 16))
+            rlay = Qtw.QListWidgetItem()
+            rlay.setCheckState(Qtc.Qt.Unchecked)
+            rlay.setText(row[2] + " (" + str(r) + ")")
+            rlay.setFont(Qtg.QFont('Arial', 16))
             self.rows.append(rlay)
-            self.cityList.insertItem(r,rlay)
-            r+=1
+            self.cityList.insertItem(r, rlay)
+            r += 1
 
     def replot(self):
         # itterating through rows and if it was marked we plot it red, otherwise blue
         self.maptile.axes.cla()
         for r, row in enumerate(self.rows):
             if row.checkState() == 2:
-                self.maptile.axes.plot(self.cities[r][4], self.cities[r][3], marker = 'o', color = 'r')
-                self.maptile.axes.text(self.cities[r][4], self.cities[r][3], r + 1, fontsize = 10)
+                self.maptile.axes.plot(self.cities[r][4], self.cities[r][3],
+                                       marker='o', color='r')
+                self.maptile.axes.text(self.cities[r][4], self.cities[r][3],
+                                       r+1, fontsize=10)
                 if self.cities[r] not in self.toVisit:
                     self.toVisit.append(self.cities[r])
             else:
-                self.maptile.axes.plot(self.cities[r][4], self.cities[r][3], marker = 'o', color = 'b')
+                self.maptile.axes.plot(self.cities[r][4], self.cities[r][3],
+                                       marker='o', color='b')
                 if self.cities[r] in self.toVisit:
-                    self.toVisit.remove(self.cities[r])   
+                    self.toVisit.remove(self.cities[r])
         self.maptile.draw()
 
     def mark(self):
         # function to mark unmarked item and unmark marked one
         var = self.cityList.item(self.cityList.currentRow())
-        var.setCheckState(Qt.Checked if var.checkState() == 0 else Qt.Unchecked)
+        var.setCheckState(Qtc.Qt.Checked if var.checkState() == 0 else Qtc.Qt.Unchecked)
 
     def mapWidget(self):
         # creating vertical layout with map, button and label
-        vlayout = QVBoxLayout()
+        vlayout = Qtw.QVBoxLayout()
 
-        self.maptile = MplCanvas(self, width = 5, height = 4, dpi = 100)
+        self.maptile = MplCanvas(self)
         self.maptile.setMinimumHeight(600)
         self.replot()
 
         vlayout.addWidget(self.maptile)
 
-        box = QHBoxLayout()
-        self.button = QPushButton()
+        box = Qtw.QHBoxLayout()
+        self.button = Qtw.QPushButton()
         self.button.setText("Find Path")
         self.button.setMaximumWidth(300)
         self.button.pressed.connect(self.dialog)
         box.addWidget(self.button)
-        box.setAlignment(Qt.AlignCenter)
+        box.setAlignment(Qtc.Qt.AlignCenter)
         vlayout.addLayout(box)
 
-        label = QLabel()
+        label = Qtw.QLabel()
         label.setText("Source: openstreetmap.org\ngeofabrik.de")
-        label.setAlignment(Qt.AlignBottom | Qt.AlignRight)
+        label.setAlignment(Qtc.Qt.AlignBottom | Qtc.Qt.AlignRight)
 
         vlayout.addWidget(label)
-        return vlayout    
+        return vlayout
 
     def dialog(self):
         # we check if user marked at least two cities and we create toVisit list
         self.button.setEnabled(False)
         if len(self.toVisit) < 2:
             # user did not mark at least two cities, we want to go back after he clicks ok
-            self.dlg = Dialog(1, [self.button])
+            self.dlg = ErrDialog("Please choose more than two cities for " +
+                                 "the algorithm to work.", 0)
+            self.dlg.button_control.connect(self.Activate_button)
+            self.dlg.exec_()
         else:
             # we have enough cities to continue so we calculate shortest path
-            self.win = solveWindow(self.cities, self.toVisit, [self.button])
+            self.win = solveWindow(self.cities, self.toVisit)
             self.button.setText("Working...")
 
+    def Activate_button(self):
+        self.button.setEnabled(True)
     # def dbDataLoad(self):
     # function to load data from db and check it's contents correctness

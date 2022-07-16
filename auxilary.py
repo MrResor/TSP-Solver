@@ -31,30 +31,34 @@ class ErrDialog(Qtw.QDialog):
 
     def __init__(self, error: str, exit_flag=0):
         super().__init__()
+        self.setWindowFlags(Qtc.Qt.WindowTitleHint)
+        self._exit_flag = exit_flag
         self.setWindowTitle("Error")
-        self.Err_disp(error, exit_flag)
-        self.button_control.emit()
+        self.Err_disp(error)
 
-    def Err_disp(self, error: str, exit_flag: int) -> None:
+    def Err_disp(self, error: str) -> None:
         """ Function to display desired error message in the dialog.\n
             Takes error string and exit flag as parameters. Presents the
             message and if flag is other then zero terminates program.
         """
-        QBtn = Qtw.QDialogButtonBox.Ok
-
-        button_box = Qtw.QDialogButtonBox(QBtn)
-        button_box.setCenterButtons(True)
-        button_box.accepted.connect(self.accept)
-
         layout = Qtw.QVBoxLayout()
         message = Qtw.QLabel(error)
         message.setAlignment(Qtc.Qt.AlignCenter)
+        hbox = Qtw.QHBoxLayout()
+        button = Qtw.QPushButton(text="OK")
+        button.setMaximumWidth(75)
+        button.pressed.connect(self.finish)
         layout.addWidget(message)
-        layout.addWidget(button_box)
+        hbox.addWidget(button)
+        hbox.setAlignment(Qtc.Qt.AlignCenter)
+        layout.addLayout(hbox)
         self.setLayout(layout)
-        self.exec()
-        if (exit_flag):
-            quit(exit_flag)
+
+    def finish(self):
+        self.button_control.emit()
+        if (self._exit_flag):
+            quit(self._exit_flag)
+        self.accept()
 
 
 class ResDialog(Qtw.QDialog):
@@ -69,9 +73,9 @@ class ResDialog(Qtw.QDialog):
 
     def __init__(self, to_plot):
         super().__init__()
+        self.setWindowFlags(Qtc.Qt.WindowTitleHint)
         self.setWindowTitle("Path")
         self.Res_disp(to_plot)
-        self.button_control.emit()
 
     def Res_disp(self, to_plot: list) -> None:
         """ Function that displays results obtained by program, both on a plot
@@ -79,22 +83,19 @@ class ResDialog(Qtw.QDialog):
             takes list of tuples as a parameter as it should contain the
             result.
         """
-        QBtn = Qtw.QDialogButtonBox.Ok
-
-        button_box = Qtw.QDialogButtonBox(QBtn)
-        button_box.setCenterButtons(True)
-        button_box.accepted.connect(self.accept)
-
         layout = Qtw.QVBoxLayout()
-
         names, mapres = self.Prep_names_and_plot(to_plot)
         layout.addWidget(mapres)
         message = Qtw.QLabel(names)
         message.setAlignment(Qtc.Qt.AlignCenter)
         layout.addWidget(message)
-        layout.addWidget(button_box)
+        button_box = Qtw.QHBoxLayout()
+        btn = Qtw.QPushButton(text="OK")
+        btn.pressed.connect(self.finish)
+        button_box.addWidget(btn)
+        button_box.setAlignment(Qtc.Qt.AlignCenter)
+        layout.addLayout(button_box)
         self.setLayout(layout)
-        self.exec()
 
     def Prep_names_and_plot(self, to_plot: list) -> tuple[str, MplCanvas]:
         """ Function to prepaire the data that will be displayed by Res_disp.\n
@@ -118,3 +119,7 @@ class ResDialog(Qtw.QDialog):
         mapres.axes.plot([x[0], x[len(to_plot) - 1]], [y[0],
                          y[len(to_plot) - 1]], color='b')
         return names, mapres
+
+    def finish(self):
+        self.button_control.emit()
+        self.accept()
