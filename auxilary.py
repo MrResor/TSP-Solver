@@ -118,6 +118,7 @@ class ResDialog(Qtw.QDialog):
             Takes list as parameter and based on it it creates a plot
             and a string that represents the result.
         """
+        print(to_plot)
         mapres = MplCanvas(self)
         x = []
         y = []
