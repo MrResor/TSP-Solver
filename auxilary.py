@@ -2,7 +2,7 @@ from __init__ import mplb, mplf, Qtw, Qtc
 
 
 class MplCanvas(mplb.FigureCanvasQTAgg):
-    """ class found on https://www.pythonguis.com/tutorials/plotting-matplotlib/
+    """ Class found on https://www.pythonguis.com/tutorials/plotting-matplotlib/
         for showing matplotlib plots in PyQt\n
 
         Atributes:\n
@@ -10,7 +10,10 @@ class MplCanvas(mplb.FigureCanvasQTAgg):
         axes    -- varaible used to access the plot (to plot something on it
         or clear it)\n
     """
+
     def __init__(self, parent=None, width=5, height=4, dpi=100):
+        """ Setup for a single plot figure, equivalent to matlab's figure()
+        """
         self.fig = mplf.Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
         super(MplCanvas, self).__init__(self.fig)
@@ -19,7 +22,7 @@ class MplCanvas(mplb.FigureCanvasQTAgg):
 # following classes are based on the one from
 # https://www.pythonguis.com/tutorials/pyqt-dialogs/
 class ErrDialog(Qtw.QDialog):
-    """ class for displaying dialog window with errors.\n
+    """ Flass for displaying dialog window with errors.\n
 
         Attributes:\n
         button_control  -- pyqt signal for activating button on main window.\n
@@ -30,13 +33,16 @@ class ErrDialog(Qtw.QDialog):
     button_control = Qtc.pyqtSignal()
 
     def __init__(self, error: str, exit_flag=0):
+        """ Sets up the error dialog window, takes in error string and
+            exit code as parameters.
+        """
         super().__init__()
         self.setWindowFlags(Qtc.Qt.WindowTitleHint)
         self._exit_flag = exit_flag
         self.setWindowTitle("Error")
-        self.Err_disp(error)
+        self.err_disp(error)
 
-    def Err_disp(self, error: str) -> None:
+    def err_disp(self, error: str) -> None:
         """ Function to display desired error message in the dialog.\n
             Takes error string and exit flag as parameters. Presents the
             message and if flag is other then zero terminates program.
@@ -58,6 +64,7 @@ class ErrDialog(Qtw.QDialog):
         self.setLayout(layout)
 
     def finish(self):
+        """ Function called when users clicks a button."""
         self.button_control.emit()
         if (self._exit_flag):
             quit(self._exit_flag)
@@ -75,12 +82,14 @@ class ResDialog(Qtw.QDialog):
     button_control = Qtc.pyqtSignal()
 
     def __init__(self, to_plot):
+        """ Sets up the dialog window with the results, takes
+        """
         super().__init__()
         self.setWindowFlags(Qtc.Qt.WindowTitleHint)
         self.setWindowTitle("Path")
-        self.Res_disp(to_plot)
+        self.res_disp(to_plot)
 
-    def Res_disp(self, to_plot: list) -> None:
+    def res_disp(self, to_plot: list) -> None:
         """ Function that displays results obtained by program, both on a plot
             and a order of cities to visit.\n
             takes list of tuples as a parameter as it should contain the
