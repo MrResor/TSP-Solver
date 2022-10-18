@@ -63,10 +63,11 @@ class solveWindow(Qtw.QWidget):
         order = self.ants(dist, size)
         self.response = []
         start = order.index(0)
+        print(order)
         # prepairing correct order for data that will be displayed
         # (first city that was marked on the list is our first city on the output)
         for i in range(size):
-            self.response.append(toVisit[order[(start + i) % size]][2:])
+            self.response.append(toVisit[order[(start + i) % size]][1:])
         # emmiting a signal that algorithm has finished it's work
         self.progressSignal.emit(0)
 
@@ -78,38 +79,41 @@ class solveWindow(Qtw.QWidget):
             self.progressSignal.emit(1)
             return 0
         cur = con.cursor()
-        try:
-            cur.execute('SELECT * FROM cities ORDER BY name')
-            if cur.fetchall() != self.verification:
-                con.close()
-                self.progressSignal.emit(2)
-                return 0
-            cur.execute('PRAGMA TABLE_INFO(cities)')
-            temp = cur.fetchall()
-            if len(temp) != 5 or temp[0][1] != "id" or temp[0][2] != 'INTEGER' or temp[1][1] != 'node_id' \
-                    or temp[1][2] != 'INTEGER' or temp[2][1] != "name" or temp[2][2] != 'TEXT' or temp[3][1] != 'lat' \
-                    or temp[3][2] != 'REAL' or temp[4][1] != 'lon' or temp[4][2] != 'REAL':
-                con.close()
-                self.progressSignal.emit(2)
-                return 0
-            cur.execute('SELECT max(id_to) FROM distance')
-            size = cur.fetchone()[0]
-            if size != len(self.verification):
-                con.close()
-                self.progressSignal.emit(2)
-                return 0
-            cur.execute('PRAGMA TABLE_INFO(distance)')
-            temp = cur.fetchall()
-            if len(temp) != 3 or temp[0][1] != 'id_from' or temp[0][2] != "INTEGER" or temp[1][1] != 'id_to' \
-                    or temp[1][2] != "INTEGER" or temp[2][1] != 'distance' or temp[2][2] != "REAL":
-                con.close()
-                self.progressSignal.emit(2)
-                return 0
-            cur.execute('SELECT * FROM distance')
-        except:
-            con.close()
-            self.progressSignal.emit(2)
-            return 0
+        # try:
+        #     cur.execute('SELECT * FROM Cities')
+        #     if cur.fetchall() != self.verification:
+        #         con.close()
+        #         self.progressSignal.emit(2)
+        #         return 0
+        #     cur.execute('PRAGMA TABLE_INFO(Cities)')
+        #     temp = cur.fetchall()
+        #     if len(temp) != 5 or temp[0][1] != "id" or temp[0][2] != 'INTEGER' or temp[1][1] != 'node_id' \
+        #             or temp[1][2] != 'INTEGER' or temp[2][1] != "name" or temp[2][2] != 'TEXT' or temp[3][1] != 'lat' \
+        #             or temp[3][2] != 'REAL' or temp[4][1] != 'lon' or temp[4][2] != 'REAL':
+        #         con.close()
+        #         self.progressSignal.emit(2)
+        #         return 0
+        #     cur.execute('SELECT max(id_to) FROM Distance')
+        cur.execute('SELECT max(id_to) FROM Distance')
+        size = cur.fetchone()[0]
+        #     size = cur.fetchone()[0]
+        #     if size != len(self.verification):
+        #         acon.close()
+        #         self.progressSignal.emit(2)
+        #         return 0
+        #     cur.execute('PRAGMA TABLE_INFO(Distance)')
+        #     temp = cur.fetchall()
+        #     if len(temp) != 3 or temp[0][1] != 'id_from' or temp[0][2] != "INTEGER" or temp[1][1] != 'id_to' \
+        #             or temp[1][2] != "INTEGER" or temp[2][1] != 'distance' or temp[2][2] != "REAL":
+        #         con.close()
+        #         self.progressSignal.emit(2)
+        #         return 0
+        #     cur.execute('SELECT * FROM Distance')
+        cur.execute('SELECT * FROM Distance')
+        # except:
+        #     con.close()
+        #     self.progressSignal.emit(2)
+        #     return 0
         val = cur.fetchall()
         con.close()
         dist = []
@@ -179,7 +183,8 @@ class solveWindow(Qtw.QWidget):
         for i in range(size):
             row = []
             for j in range(size):
-                self.a[i][j] = (self.tau[i][j] ** alpha) * (self.n[i][j] ** beta)
+                self.a[i][j] = (self.tau[i][j] ** alpha) * \
+                    (self.n[i][j] ** beta)
                 row.append(size + 1)
             row.append(0)
             self.ant.append(row)
@@ -193,7 +198,8 @@ class solveWindow(Qtw.QWidget):
             self.ant[i][0] = self.start[i]
             for j in range(1, size):
                 for q in range(size):
-                    self.p[q] = self.a[self.ant[i][j-1]][q] * (q not in self.ant[i])
+                    self.p[q] = self.a[self.ant[i][j-1]][q] * \
+                        (q not in self.ant[i])
                 s = sum(self.p)
                 self.p = [val / s for val in self.p]
                 r = 0
@@ -203,7 +209,8 @@ class solveWindow(Qtw.QWidget):
                     r -= self.p[q]
                     if r <= 0:
                         self.ant[i][j] = q
-                        self.ant[i][size] += dist[self.ant[i][j - 1]][self.ant[i][j]]
+                        self.ant[i][size] += dist[self.ant[i]
+                                                  [j - 1]][self.ant[i][j]]
                         break
             self.ant[i][size] += dist[self.ant[i][size-1]][self.ant[i][0]]
 
@@ -215,10 +222,14 @@ class solveWindow(Qtw.QWidget):
                 self.tau[i][j] *= (1-rho)
         for i in range(size):
             for j in range(1, size):
-                self.tau[self.ant[i][j - 1]][self.ant[i][j]] += 1/self.ant[i][size]
-                self.tau[self.ant[i][j]][self.ant[i][j - 1]] += 1/self.ant[i][size]
-            self.tau[self.ant[i][0]][self.ant[i][size - 1]] += 1/self.ant[i][size]
-            self.tau[self.ant[i][size - 1]][self.ant[i][0]] += 1/self.ant[i][size]
+                self.tau[self.ant[i][j - 1]][self.ant[i]
+                                             [j]] += 1/self.ant[i][size]
+                self.tau[self.ant[i][j]][self.ant[i]
+                                         [j - 1]] += 1/self.ant[i][size]
+            self.tau[self.ant[i][0]][self.ant[i]
+                                     [size - 1]] += 1/self.ant[i][size]
+            self.tau[self.ant[i][size - 1]][self.ant[i]
+                                            [0]] += 1/self.ant[i][size]
 
     def activate_button(self):
         self.button_control.emit()
