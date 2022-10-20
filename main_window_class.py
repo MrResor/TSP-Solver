@@ -7,50 +7,67 @@ class MainWindow(Qtw.QMainWindow):
     """ Class for displaying main window and it's components.\n
 
         Attributes:\n
-        progress_signal -- signal for handling any errors
-        
+        progress_signal     -- signal for handling any errors.\n
+        to_visit            -- initially empty list of cities chosen by user.\n
+        cities              -- variable holding data from database.\n
+        city_list           -- variable holding list widget that allows for
+        choosing the cities by the user.\n
+        map_tile             -- holds widget with plot.\n
+        button              -- a button widget.\n
+        Methods:\n
+        init_ui             -- method to setup the user interface.\n
+        list_widget         -- prepairs a list widget.\n
+        polulate_city_list  -- fills up list widget with data from database.\n
+        replot              -- redraws a plot to show chosen cities.\n
+        mark                -- handles visual marking of the chosen cities.\n
+        map_widget          -- Set's up right side of the UI, map and button.\n
 
     """
     progress_signal = Qtc.pyqtSignal(int)
 
     def __init__(self, parent=None):
-        # setting up windows title for the whole class
+        """ Constructor, changes window name and calls other setup functions.
+        """
         super().__init__(parent)
-        self.toVisit = []
+        self.to_visit = []
         self.setWindowTitle('Route Planning Support')
         self.progress_signal.connect(self.handle_err_signal)
-        self.initUI()
+        self.init_ui()
 
-    def initUI(self):
-        # function prepairing each part of main window UI
-        mainwindow = Qtw.QWidget()
+    def init_ui(self) -> None:
+        """ Method that initialises all UI elements or calls respective
+            functions to do so.
+        """
+        main_window = Qtw.QWidget()
 
-        hlayout = Qtw.QHBoxLayout()
+        h_layout = Qtw.QHBoxLayout()
 
-        vlayout = self.list_widget()
-        hlayout.addLayout(vlayout)
+        v_layout = self.list_widget()
+        h_layout.addLayout(v_layout)
 
-        vlayout = self.map_widget()
+        v_layout = self.map_widget()
 
-        hlayout.addLayout(vlayout)
+        h_layout.addLayout(v_layout)
 
-        mainwindow.setLayout(hlayout)
-        self.setCentralWidget(mainwindow)
+        main_window.setLayout(h_layout)
+        self.setCentralWidget(main_window)
 
-    def list_widget(self):
-        # creating vertical layout with cityList
-        vlayout = Qtw.QVBoxLayout()
-        self.cityList = Qtw.QListWidget()
-        self.cityList.setMaximumWidth(600)
-        if (self.populateCityList()) == 0:
-            return 0
-        self.cityList.itemChanged.connect(self.replot)
-        self.cityList.itemActivated.connect(self.mark)
-        vlayout.addWidget(self.cityList)
-        return vlayout
+    def list_widget(self) -> Qtw.QVBoxLayout:
+        """ Sets up list widget and calls a function that will populate it.
+        """
+        v_layout = Qtw.QVBoxLayout()
+        self.city_list = Qtw.QListWidget()
+        self.city_list.setMaximumWidth(600)
+        self.populate_city_list()
+        self.city_list.itemChanged.connect(self.replot)
+        self.city_list.itemActivated.connect(self.mark)
+        v_layout.addWidget(self.city_list)
+        return v_layout
 
-    def populateCityList(self):
-        # reading city list from database
+    def populate_city_list(self) -> None:
+        """ Method responsible for connecting to database, obtaining list of cities,
+            and lastly fills the widget with that data.
+        """
         if path.exists("database.db"):
             con = sqlite3.connect("database.db")
         else:
@@ -101,42 +118,47 @@ class MainWindow(Qtw.QMainWindow):
             rlay.setText(row[1] + " (" + str(r) + ")")
             rlay.setFont(Qtg.QFont('Arial', 16))
             self.rows.append(rlay)
-            self.cityList.insertItem(r, rlay)
+            self.city_list.insertItem(r, rlay)
             r += 1
 
-    def replot(self):
+    def replot(self) -> None:
+        """ Replots the plot of cities.
+        """
         # itterating through rows and if it was marked we plot it red, otherwise blue
-        self.maptile.axes.cla()
+        self.map_tile.axes.cla()
         for r, row in enumerate(self.rows):
             if row.checkState() == 2:
-                self.maptile.axes.plot(self.cities[r][3], self.cities[r][2],
-                                       marker='o', color='r')
-                self.maptile.axes.text(self.cities[r][3], self.cities[r][2],
-                                       r+1, fontsize=10)
-                if self.cities[r] not in self.toVisit:
-                    self.toVisit.append(self.cities[r])
+                self.map_tile.axes.plot(self.cities[r][3], self.cities[r][2],
+                                        marker='o', color='r')
+                self.map_tile.axes.text(self.cities[r][3], self.cities[r][2],
+                                        r+1, fontsize=10)
+                if self.cities[r] not in self.to_visit:
+                    self.to_visit.append(self.cities[r])
             else:
-                self.maptile.axes.plot(self.cities[r][3], self.cities[r][2],
-                                       marker='o', color='b')
-                if self.cities[r] in self.toVisit:
-                    self.toVisit.remove(self.cities[r])
-        self.maptile.draw()
+                self.map_tile.axes.plot(self.cities[r][3], self.cities[r][2],
+                                        marker='o', color='b')
+                if self.cities[r] in self.to_visit:
+                    self.to_visit.remove(self.cities[r])
+        self.map_tile.draw()
 
-    def mark(self):
-        # function to mark unmarked item and unmark marked one
-        var = self.cityList.item(self.cityList.currentRow())
+    def mark(self) -> None:
+        """ Method that handles visual marking of the cities chosen
+            by the user on the list.
+        """
+        var = self.city_list.item(self.city_list.currentRow())
         var.setCheckState(Qtc.Qt.Checked if var.checkState()
                           == 0 else Qtc.Qt.Unchecked)
 
-    def map_widget(self):
-        # creating vertical layout with map, button and label
-        vlayout = Qtw.QVBoxLayout()
+    def map_widget(self) -> None:
+        """ Setup for map widget, as well as few remaining elements.
+        """
+        v_layout = Qtw.QVBoxLayout()
 
-        self.maptile = MplCanvas(self)
-        self.maptile.setMinimumHeight(600)
+        self.map_tile = MplCanvas(self)
+        self.map_tile.setMinimumHeight(600)
         self.replot()
 
-        vlayout.addWidget(self.maptile)
+        v_layout.addWidget(self.map_tile)
 
         box = Qtw.QHBoxLayout()
         self.button = Qtw.QPushButton()
@@ -145,19 +167,19 @@ class MainWindow(Qtw.QMainWindow):
         self.button.pressed.connect(self.dialog)
         box.addWidget(self.button)
         box.setAlignment(Qtc.Qt.AlignCenter)
-        vlayout.addLayout(box)
+        v_layout.addLayout(box)
 
         label = Qtw.QLabel()
         label.setText("Source: openstreetmap.org\ngeofabrik.de")
         label.setAlignment(Qtc.Qt.AlignBottom | Qtc.Qt.AlignRight)
 
-        vlayout.addWidget(label)
-        return vlayout
+        v_layout.addWidget(label)
+        return v_layout
 
-    def dialog(self):
-        # we check if user marked at least two cities and we create toVisit list
+    def dialog(self) -> None:
+        # we check if user marked at least two cities and we create to_visit list
         self.button.setEnabled(False)
-        if len(self.toVisit) < 2:
+        if len(self.to_visit) < 2:
             # user did not mark at least two cities, we want to go back after he clicks ok
             self.dlg = ErrDialog("Please choose more than two cities for " +
                                  "the algorithm to work.", 0)
@@ -165,7 +187,7 @@ class MainWindow(Qtw.QMainWindow):
             self.dlg.exec_()
         else:
             # we have enough cities to continue so we calculate shortest path
-            self.win = solveWindow(self.cities, self.toVisit)
+            self.win = solveWindow(self.cities, self.to_visit)
             self.button.setText("Working...")
 
     def activate_button(self):
