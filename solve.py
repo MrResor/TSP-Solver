@@ -63,7 +63,6 @@ class solveWindow(Qtw.QWidget):
         order = self.ants(dist, size)
         self.response = []
         start = order.index(0)
-        print(order)
         # prepairing correct order for data that will be displayed
         # (first city that was marked on the list is our first city on the output)
         for i in range(size):
@@ -147,7 +146,6 @@ class solveWindow(Qtw.QWidget):
             if best[size] > self.ant[index][size]:
                 best = self.ant[index]
             self.pheromones(size)
-
         return best
 
     def antsTables(self, dist, size):
