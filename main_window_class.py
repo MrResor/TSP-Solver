@@ -14,14 +14,14 @@ class MainWindow(Qtw.QMainWindow):
         choosing the cities by the user.\n
         map_tile             -- holds widget with plot.\n
         button              -- a button widget.\n
+
         Methods:\n
         init_ui             -- method to setup the user interface.\n
         list_widget         -- prepairs a list widget.\n
         polulate_city_list  -- fills up list widget with data from database.\n
         replot              -- redraws a plot to show chosen cities.\n
         mark                -- handles visual marking of the chosen cities.\n
-        map_widget          -- Set's up right side of the UI, map and button.\n
-
+        map_widget          -- Set's up right side of the UI, map and button.
     """
     progress_signal = Qtc.pyqtSignal(int)
 
@@ -109,29 +109,25 @@ class MainWindow(Qtw.QMainWindow):
         #     con.close()
         #     return 0
         con.close()
-        self.rows = []
-        r = 1
         # filling list row by row with checkbox and city name
         for row in self.cities:
             rlay = Qtw.QListWidgetItem()
             rlay.setCheckState(Qtc.Qt.Unchecked)
-            rlay.setText(row[1] + " (" + str(r) + ")")
+            rlay.setText(row[1] + " (" + str(row[0]) + ")")
             rlay.setFont(Qtg.QFont('Arial', 16))
-            self.rows.append(rlay)
-            self.city_list.insertItem(r, rlay)
-            r += 1
+            self.city_list.insertItem(row[0], rlay)
 
     def replot(self) -> None:
-        """ Replots the plot of cities.
+        """ Replots the plot of cities. Marked cities are plotted red,
+            unmarked ones are blue.
         """
-        # itterating through rows and if it was marked we plot it red, otherwise blue
         self.map_tile.axes.cla()
-        for r, row in enumerate(self.rows):
-            if row.checkState() == 2:
+        for r in range(self.city_list.count()):
+            if self.city_list.item(r).checkState() == 2:
                 self.map_tile.axes.plot(self.cities[r][3], self.cities[r][2],
                                         marker='o', color='r')
                 self.map_tile.axes.text(self.cities[r][3], self.cities[r][2],
-                                        r+1, fontsize=10)
+                                        self.cities[r][0], fontsize=10)
                 if self.cities[r] not in self.to_visit:
                     self.to_visit.append(self.cities[r])
             else:
@@ -190,7 +186,7 @@ class MainWindow(Qtw.QMainWindow):
             self.win = solveWindow(self.cities, self.to_visit)
             self.button.setText("Working...")
 
-    def activate_button(self):
+    def activate_button(self) -> None:
         self.button.setEnabled(True)
 
     def handle_err_signal(self, code: int) -> None:
