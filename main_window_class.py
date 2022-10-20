@@ -1,6 +1,7 @@
 from __init__ import Qtw, Qtc, Qtg, sqlite3, path
 from auxilary import ErrDialog, MplCanvas
 from solve import solveWindow
+from db_connection import db
 
 
 class MainWindow(Qtw.QMainWindow):
@@ -12,8 +13,9 @@ class MainWindow(Qtw.QMainWindow):
         cities              -- variable holding data from database.\n
         city_list           -- variable holding list widget that allows for
         choosing the cities by the user.\n
-        map_tile             -- holds widget with plot.\n
+        map_tile            -- holds widget with plot.\n
         button              -- a button widget.\n
+        dlg                 -- holds dialog widget.\n
 
         Methods:\n
         init_ui             -- method to setup the user interface.\n
@@ -32,6 +34,9 @@ class MainWindow(Qtw.QMainWindow):
         self.to_visit = []
         self.setWindowTitle('Route Planning Support')
         self.progress_signal.connect(self.handle_err_signal)
+        db.error_signal.error_signal.connect(self.handle_err_signal)
+        self.db = db()
+
         self.init_ui()
 
     def init_ui(self) -> None:
@@ -68,11 +73,7 @@ class MainWindow(Qtw.QMainWindow):
         """ Method responsible for connecting to database, obtaining list of cities,
             and lastly fills the widget with that data.
         """
-        if path.exists("database.db"):
-            con = sqlite3.connect("database.db")
-        else:
-            dlg = ErrDialog("Database file missing!\nIt is neccessary for this\
-                            application to work.", 2)
+        con = sqlite3.connect("database")
         cur = con.cursor()
         # try:
         #     cur.execute('PRAGMA TABLE_INFO(cities)')
@@ -179,7 +180,7 @@ class MainWindow(Qtw.QMainWindow):
             # user did not mark at least two cities, we want to go back after he clicks ok
             self.dlg = ErrDialog("Please choose more than two cities for " +
                                  "the algorithm to work.", 0)
-            self.dlg.button_control.connect(self.Activate_button)
+            self.dlg.button_control.connect(self.activate_button)
             self.dlg.exec_()
         else:
             # we have enough cities to continue so we calculate shortest path
@@ -187,10 +188,16 @@ class MainWindow(Qtw.QMainWindow):
             self.button.setText("Working...")
 
     def activate_button(self) -> None:
+        """ Method called by signal to activate disabled button.
+        """
         self.button.setEnabled(True)
 
     def handle_err_signal(self, code: int) -> None:
-        dlg = ErrDialog("Incorrect Database file found!\nPlease use\
-                correct one, provided by creator.", code)
+        if code == 1:
+            self.dlg = ErrDialog(
+                f'Database file missing! It is neccessary for this application to work.', code)
+            self.dlg.exec_()
+        # dlg = ErrDialog("Incorrect Database file found!\nPlease use\
+        #         correct one, provided by creator.", code)
         # def dbDataLoad(self):
         # function to load data from db and check it's contents correctness
