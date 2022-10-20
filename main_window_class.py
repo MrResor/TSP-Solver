@@ -16,6 +16,7 @@ class MainWindow(Qtw.QMainWindow):
         map_tile            -- holds widget with plot.\n
         button              -- a button widget.\n
         dlg                 -- holds dialog widget.\n
+        win                 -- widget which solves the TSP problem.\n
 
         Methods:\n
         init_ui             -- method to setup the user interface.\n
@@ -36,7 +37,6 @@ class MainWindow(Qtw.QMainWindow):
         self.progress_signal.connect(self.handle_err_signal)
         db.error_signal.error_signal.connect(self.handle_err_signal)
         self.db = db()
-
         self.init_ui()
 
     def init_ui(self) -> None:
@@ -44,16 +44,11 @@ class MainWindow(Qtw.QMainWindow):
             functions to do so.
         """
         main_window = Qtw.QWidget()
-
         h_layout = Qtw.QHBoxLayout()
-
         v_layout = self.list_widget()
         h_layout.addLayout(v_layout)
-
         v_layout = self.map_widget()
-
         h_layout.addLayout(v_layout)
-
         main_window.setLayout(h_layout)
         self.setCentralWidget(main_window)
 
@@ -73,50 +68,14 @@ class MainWindow(Qtw.QMainWindow):
         """ Method responsible for connecting to database, obtaining list of cities,
             and lastly fills the widget with that data.
         """
-        con = sqlite3.connect("database")
-        cur = con.cursor()
-        # try:
-        #     cur.execute('PRAGMA TABLE_INFO(cities)')
-        #     temp = cur.fetchall()
-        #     if len(temp) != 5 or temp[0][1] != "id" or temp[0][2] != 'INTEGER' or temp[1][1] != 'node_id' \
-        #             or temp[1][2] != 'INTEGER' or temp[2][1] != "name" or temp[2][2] != 'TEXT' or temp[3][1] != 'lat' \
-        #             or temp[3][2] != 'REAL' or temp[4][1] != 'lon' or temp[4][2] != 'REAL':
-        #         con.close()
-        #         self.progressSignal.emit(2)
-        #         return 0
-        #     cur.execute('SELECT * FROM cities ORDER BY name')
-        cur.execute('SELECT * FROM Cities')
-        #     self.cities = cur.fetchall()
-        self.cities = cur.fetchall()
-        #     cur.execute('SELECT max(id_to) FROM distance')
-        cur.execute('SELECT max(id_to) from Distance')
-        #     size = cur.fetchone()[0]
-        size = cur.fetchone()[0]
-        #     if size != len(self.cities):
-        #         con.close()
-        #         self.progressSignal.emit(2)
-        #         return 0
-        #     cur.execute('PRAGMA TABLE_INFO(distance)')
-        #     temp = cur.fetchall()
-        #     if len(temp) != 3 or temp[0][1] != 'id_from' or temp[0][2] != "INTEGER" or temp[1][1] != 'id_to' \
-        #             or temp[1][2] != "INTEGER" or temp[2][1] != 'distance' or temp[2][2] != "REAL":
-        #         con.close()
-        #         self.progressSignal.emit(2)
-        #         return 0
-        # except sqlite3.OperationalError:
-        #     # if there is no table cities in db, it means it is not mine db,
-        #     # so we close connection, remove the file we just created and show error dialog
-        #     self.progressSignal.emit(2)
-        #     con.close()
-        #     return 0
-        con.close()
+        self.cities = self.db.querry('SELECT * FROM Cities')
         # filling list row by row with checkbox and city name
-        for row in self.cities:
-            rlay = Qtw.QListWidgetItem()
-            rlay.setCheckState(Qtc.Qt.Unchecked)
-            rlay.setText(row[1] + " (" + str(row[0]) + ")")
-            rlay.setFont(Qtg.QFont('Arial', 16))
-            self.city_list.insertItem(row[0], rlay)
+        for city in self.cities:
+            row = Qtw.QListWidgetItem()
+            row.setCheckState(Qtc.Qt.Unchecked)
+            row.setText(city[1] + " (" + str(city[0]) + ")")
+            row.setFont(Qtg.QFont('Arial', 16))
+            self.city_list.insertItem(city[0], row)
 
     def replot(self) -> None:
         """ Replots the plot of cities. Marked cities are plotted red,
@@ -150,13 +109,10 @@ class MainWindow(Qtw.QMainWindow):
         """ Setup for map widget, as well as few remaining elements.
         """
         v_layout = Qtw.QVBoxLayout()
-
         self.map_tile = MplCanvas(self)
         self.map_tile.setMinimumHeight(600)
         self.replot()
-
         v_layout.addWidget(self.map_tile)
-
         box = Qtw.QHBoxLayout()
         self.button = Qtw.QPushButton()
         self.button.setText("Find Path")
@@ -165,11 +121,9 @@ class MainWindow(Qtw.QMainWindow):
         box.addWidget(self.button)
         box.setAlignment(Qtc.Qt.AlignCenter)
         v_layout.addLayout(box)
-
         label = Qtw.QLabel()
         label.setText("Source: openstreetmap.org\ngeofabrik.de")
         label.setAlignment(Qtc.Qt.AlignBottom | Qtc.Qt.AlignRight)
-
         v_layout.addWidget(label)
         return v_layout
 
@@ -177,11 +131,7 @@ class MainWindow(Qtw.QMainWindow):
         # we check if user marked at least two cities and we create to_visit list
         self.button.setEnabled(False)
         if len(self.to_visit) < 2:
-            # user did not mark at least two cities, we want to go back after he clicks ok
-            self.dlg = ErrDialog("Please choose more than two cities for " +
-                                 "the algorithm to work.", 0)
-            self.dlg.button_control.connect(self.activate_button)
-            self.dlg.exec_()
+            self.progress_signal.emit(0)
         else:
             # we have enough cities to continue so we calculate shortest path
             self.win = solveWindow(self.cities, self.to_visit)
@@ -193,11 +143,14 @@ class MainWindow(Qtw.QMainWindow):
         self.button.setEnabled(True)
 
     def handle_err_signal(self, code: int) -> None:
-        if code == 1:
-            self.dlg = ErrDialog(
-                f'Database file missing! It is neccessary for this application to work.', code)
-            self.dlg.exec_()
-        # dlg = ErrDialog("Incorrect Database file found!\nPlease use\
-        #         correct one, provided by creator.", code)
-        # def dbDataLoad(self):
-        # function to load data from db and check it's contents correctness
+        """ Creates error message to present.
+        """
+        if code == 0:
+            err = f'Please choose more than two cities for the algorithm to work.'
+        elif code == 1:
+            err = f'Database file missing! It is neccessary for this application to work.'
+        elif code == 2:
+            err = f'Database file incorrect! Necessary table was not found.'
+        self.dlg = ErrDialog(err, code)
+        self.dlg.button_control.connect(self.activate_button)
+        self.dlg.exec_()
