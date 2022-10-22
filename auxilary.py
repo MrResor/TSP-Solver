@@ -54,13 +54,13 @@ class ErrDialog(Qtw.QDialog):
         button.setMaximumWidth(75)
         button.pressed.connect(self.finish)
 
-        hbox = Qtw.QHBoxLayout()
-        hbox.addWidget(button)
-        hbox.setAlignment(Qtc.Qt.AlignCenter)
+        h_box = Qtw.QHBoxLayout()
+        h_box.addWidget(button)
+        h_box.setAlignment(Qtc.Qt.AlignCenter)
 
         layout = Qtw.QVBoxLayout()
         layout.addWidget(message)
-        layout.addLayout(hbox)
+        layout.addLayout(h_box)
         self.setLayout(layout)
 
     def finish(self):
