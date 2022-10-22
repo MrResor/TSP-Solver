@@ -69,7 +69,6 @@ class MainWindow(Qtw.QMainWindow):
             and lastly fills the widget with that data.
         """
         self.cities = self.db.querry('SELECT * FROM Cities')
-        # filling list row by row with checkbox and city name
         for city in self.cities:
             row = Qtw.QListWidgetItem()
             row.setCheckState(Qtc.Qt.Unchecked)
@@ -145,12 +144,14 @@ class MainWindow(Qtw.QMainWindow):
     def handle_err_signal(self, code: int) -> None:
         """ Creates error message to present.
         """
+        err = {
+            0: f'Please choose more than two cities for the algorithm to work.',
+            1: f'Database file missing! It is neccessary for this application to work.',
+            2: f'Database file incorrect! Necessary table was not found.',
+            3: f'Database file incorrect! Table Cities is not as expected.',
+            4: f'Database file incorrect! Table Distance is not as expected.'
+        }
+        self.dlg = ErrDialog(err[code], code)
         if code == 0:
-            err = f'Please choose more than two cities for the algorithm to work.'
-        elif code == 1:
-            err = f'Database file missing! It is neccessary for this application to work.'
-        elif code == 2:
-            err = f'Database file incorrect! Necessary table was not found.'
-        self.dlg = ErrDialog(err, code)
-        self.dlg.button_control.connect(self.activate_button)
+            self.dlg.button_control.connect(self.activate_button)
         self.dlg.exec_()
