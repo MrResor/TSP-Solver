@@ -78,41 +78,9 @@ class solveWindow(Qtw.QWidget):
             self.progressSignal.emit(1)
             return 0
         cur = con.cursor()
-        # try:
-        #     cur.execute('SELECT * FROM Cities')
-        #     if cur.fetchall() != self.verification:
-        #         con.close()
-        #         self.progressSignal.emit(2)
-        #         return 0
-        #     cur.execute('PRAGMA TABLE_INFO(Cities)')
-        #     temp = cur.fetchall()
-        #     if len(temp) != 5 or temp[0][1] != "id" or temp[0][2] != 'INTEGER' or temp[1][1] != 'node_id' \
-        #             or temp[1][2] != 'INTEGER' or temp[2][1] != "name" or temp[2][2] != 'TEXT' or temp[3][1] != 'lat' \
-        #             or temp[3][2] != 'REAL' or temp[4][1] != 'lon' or temp[4][2] != 'REAL':
-        #         con.close()
-        #         self.progressSignal.emit(2)
-        #         return 0
-        #     cur.execute('SELECT max(id_to) FROM Distance')
         cur.execute('SELECT max(id_to) FROM Distance')
         size = cur.fetchone()[0]
-        #     size = cur.fetchone()[0]
-        #     if size != len(self.verification):
-        #         acon.close()
-        #         self.progressSignal.emit(2)
-        #         return 0
-        #     cur.execute('PRAGMA TABLE_INFO(Distance)')
-        #     temp = cur.fetchall()
-        #     if len(temp) != 3 or temp[0][1] != 'id_from' or temp[0][2] != "INTEGER" or temp[1][1] != 'id_to' \
-        #             or temp[1][2] != "INTEGER" or temp[2][1] != 'distance' or temp[2][2] != "REAL":
-        #         con.close()
-        #         self.progressSignal.emit(2)
-        #         return 0
-        #     cur.execute('SELECT * FROM Distance')
         cur.execute('SELECT * FROM Distance')
-        # except:
-        #     con.close()
-        #     self.progressSignal.emit(2)
-        #     return 0
         val = cur.fetchall()
         con.close()
         dist = []
