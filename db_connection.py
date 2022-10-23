@@ -14,6 +14,18 @@ class signal(Qtc.QObject):
 
 
 class db():
+    """ Class holding database connection and performing querries.\n
+
+        Attributes:\n
+        error_signal            -- Qobject holding error signal.\n
+        _con                    -- holds a database connection object.\n
+        _cur                    -- cursor that will perform querries.\n
+
+        Methods:\n
+        querry                  -- runs querries passed as string and returns results.\n
+        ensure_data_integrity   -- ensures that data in database follows my dataformat,
+        to avoid any crashes.
+    """
 
     error_signal = signal()
 
