@@ -34,7 +34,7 @@ class db():
         """ Connects to database and creates cursor for querries.
         """
         if path.exists("database.db"):
-            self._con = sqlite3.connect("database.db")
+            self._con = sqlite3.connect("database.db", check_same_thread=False)
             self._cur = self._con.cursor()
         else:
             raise FileNotFoundError
