@@ -39,3 +39,15 @@ def db_data(func):
                 instance.error_signal.error_signal.emit(4)
 
     return wrapper_catch_data_inconsistency
+
+
+def data_check(func):
+    """ Decorator for making sure that given graph can be made complete
+        with Floyd-Warshall algorithm.
+    """
+    def wrapper_catch_not_complete_graph(instance):
+        try:
+            return func(instance)
+        except RuntimeError:
+            instance.error_signal.emit(5)
+    return wrapper_catch_not_complete_graph
