@@ -123,17 +123,23 @@ class MainWindow(Qtw.QMainWindow):
         label = Qtw.QLabel()
         label.setText("Source: openstreetmap.org\ngeofabrik.de")
         label.setAlignment(Qtc.Qt.AlignBottom | Qtc.Qt.AlignRight)
+        label.setFixedHeight(40)
         v_layout.addWidget(label)
         return v_layout
 
     def dialog(self) -> None:
-        # we check if user marked at least two cities and we create to_visit list
+        """ Method that is activated by clicking a button.
+            Checks if there are more than 2 cities chosen on the list,
+            if yes proceeds to solution, if no shows error message.
+        """
         self.button.setEnabled(False)
         if len(self.to_visit) < 2:
             self.progress_signal.emit(0)
         else:
             # we have enough cities to continue so we calculate shortest path
-            self.win = solveWindow(self.cities, self.to_visit)
+            self.win = solveWindow(self.db, self.to_visit)
+            self.win.button_control.connect(self.activate_button)
+            self.win.error_signal.connect(self.handle_err_signal)
             self.button.setText("Working...")
 
     def activate_button(self) -> None:
@@ -149,7 +155,8 @@ class MainWindow(Qtw.QMainWindow):
             1: f'Database file missing! It is neccessary for this application to work.',
             2: f'Database file incorrect! Necessary table was not found.',
             3: f'Database file incorrect! Table Cities is not as expected.',
-            4: f'Database file incorrect! Table Distance is not as expected.'
+            4: f'Database file incorrect! Table Distance is not as expected.',
+            5: f'Database file incorrect! Data inside does not allow for TSP solution.'
         }
         self.dlg = ErrDialog(err[code], code)
         if code == 0:
