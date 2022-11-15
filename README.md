@@ -18,7 +18,9 @@ colony algorithm is run.
 ## TODO
 Implement "loading bar"<br />
 Implement possibility to have results presented on leaflet like screen<br />
-remove any newly found errors<br />
+Remove any newly found errors<br />
+Change code to use decorators for error handling<br />
+Make code more pythonic<br />
 
 ## errors
-program does not detect if a city can be reached at all, so check after Floyd-Warshall algorithm should be performed. This is not a problem for a custom (provided) data.
+Currently no errors are known
