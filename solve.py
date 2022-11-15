@@ -4,6 +4,7 @@ from threading import Thread
 import pandas as pd
 from numpy import full, Inf, fill_diagonal, ndarray, random, power
 from decorators import data_check
+from db_connection import db
 
 
 class solveWindow(Qtw.QWidget):
@@ -12,7 +13,7 @@ class solveWindow(Qtw.QWidget):
     error_signal = Qtc.pyqtSignal(int)
     button_control = Qtc.pyqtSignal()
 
-    def __init__(self, db, to_visit):
+    def __init__(self, db: db, to_visit: list):
         """ Sets up solution class and some result presentation.
         """
         super().__init__()
@@ -38,21 +39,16 @@ class solveWindow(Qtw.QWidget):
         self.dlg.exec_()
         self.close()
 
-    def algorithm(self):
+    def algorithm(self) -> None:
         # full algorithm, we generate non existing paths between cities from real ones using floydWarshall algorithm
         # only lengths, there is no record of what cities were used
-        dist_full = self.floydWarshall()
+        dist_full = self.floyd_warshall()
         if type(dist_full) != ndarray:
             return
         # with full 72 x 72 table of distances we cut unnecessary ones and pass that distance table into ants function
         self.size = len(self.to_visit)
-        self.dist = full((self.size, self.size), 0.0)
-        for i in range(self.size):
-            for j in range(i, self.size):
-                self.dist[i][j] = dist_full[self.to_visit[i]
-                                            [0] - 1][self.to_visit[j][0] - 1]
-                self.dist[j][i] = dist_full[self.to_visit[j]
-                                            [0] - 1][self.to_visit[i][0] - 1]
+        ids = [x[0] - 1 for x in self.to_visit]
+        self.dist = dist_full[ids][:, ids]
         order = self.ants()
         start = list(order).index(0)
         # prepairing correct order for data that will be displayed
@@ -63,7 +59,7 @@ class solveWindow(Qtw.QWidget):
         self.progress_signal.emit()
 
     @data_check
-    def floydWarshall(self):
+    def floyd_warshall(self):
         # floyd warshall algorithm to make up for not existing connections between cities (needed for TSP)
         size = self.db.querry('SELECT max(id_to) FROM Distance')[0][0]
         val = self.db.querry('SELECT * FROM Distance')
