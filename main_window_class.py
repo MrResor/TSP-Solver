@@ -146,6 +146,7 @@ class MainWindow(Qtw.QMainWindow):
         """ Method called by signal to activate disabled button.
         """
         self.button.setEnabled(True)
+        self.button.setText("Find Path")
 
     def handle_err_signal(self, code: int) -> None:
         """ Creates error message to present.
